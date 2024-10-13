@@ -11,6 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from "@/components/ui/checkbox"
+import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 type Monitor = {
   id: string;
@@ -19,6 +22,17 @@ type Monitor = {
   protocol: string;
   port?: number;
   check_interval: number;
+  timeout?: number;
+  alert_type?: string;
+  alert_threshold?: number;
+  expected_status_code?: number;
+  content_match?: string;
+  ssl_tls_check?: boolean;
+  auth_details?: Record<string, any>;
+  retry_count?: number;
+  custom_headers?: Record<string, any>;
+  dns_query_type?: string;
+  ping_count?: number;
 };
 
 export default function MonitorManagement() {
@@ -122,7 +136,7 @@ export default function MonitorManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-black p-8">
+    <div className="min-h-screen p-8">
       <Card className="bg-zinc-900 border-zinc-800 mb-8">
         <CardHeader>
           <CardTitle className="text-2xl font-light text-white flex justify-between items-center">
@@ -164,68 +178,226 @@ export default function MonitorManagement() {
       <AnimatePresence>
         {(isAddModalOpen || isEditModalOpen) && (
           <Dialog open={isAddModalOpen || isEditModalOpen} onOpenChange={closeModals}>
-            <DialogContent className="bg-zinc-900 text-white">
-              <DialogHeader>
+            <DialogContent className="bg-zinc-900 text-white max-w-6xl flex flex-col h-[80vh]">
+              <DialogHeader className="flex-shrink-0">
                 <DialogTitle>{isEditModalOpen ? 'Edit Monitor' : 'Add Monitor'}</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name || ''}
-                      onChange={handleInputChange}
-                      className="bg-zinc-800 border-zinc-700 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="url_ip_address">URL/IP Address</Label>
-                    <Input
-                      id="url_ip_address"
-                      name="url_ip_address"
-                      value={formData.url_ip_address || ''}
-                      onChange={handleInputChange}
-                      className="bg-zinc-800 border-zinc-700 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="protocol">Protocol</Label>
-                    <Select
-                      name="protocol"
-                      value={formData.protocol || ''}
-                      onValueChange={(value) => handleSelectChange('protocol', value)}
-                    >
-                      <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
-                        <SelectValue placeholder="Select protocol" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
-                        <SelectItem value="HTTP">HTTP</SelectItem>
-                        <SelectItem value="HTTPS">HTTPS</SelectItem>
-                        <SelectItem value="TCP">TCP</SelectItem>
-                        <SelectItem value="UDP">UDP</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="check_interval">Check Interval (seconds)</Label>
-                    <Input
-                      id="check_interval"
-                      name="check_interval"
-                      type="number"
-                      value={formData.check_interval || ''}
-                      onChange={handleInputChange}
-                      className="bg-zinc-800 border-zinc-700 text-white"
-                    />
-                  </div>
-                </div>
-                <DialogFooter className="mt-6">
-                  <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white">
-                    {isEditModalOpen ? 'Update' : 'Create'}
-                  </Button>
-                </DialogFooter>
-              </form>
+              <div className="flex-grow flex overflow-hidden">
+                <form onSubmit={handleSubmit} className="flex-grow flex">
+                  <ScrollArea className="flex-grow p-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="name">Name *</Label>
+                        <Input
+                          id="name"
+                          name="name"
+                          value={formData.name || ''}
+                          onChange={handleInputChange}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="url_ip_address">URL/IP Address *</Label>
+                        <Input
+                          id="url_ip_address"
+                          name="url_ip_address"
+                          value={formData.url_ip_address || ''}
+                          onChange={handleInputChange}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="protocol">Protocol *</Label>
+                        <Select
+                          name="protocol"
+                          value={formData.protocol || ''}
+                          onValueChange={(value) => handleSelectChange('protocol', value)}
+                          required
+                        >
+                          <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                            <SelectValue placeholder="Select protocol" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
+                            <SelectItem value="HTTPS">HTTPS</SelectItem>
+                            <SelectItem value="ICMP">ICMP (Ping)</SelectItem>
+                            <SelectItem value="TCP">TCP</SelectItem>
+                            <SelectItem value="UDP">UDP</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {(formData.protocol === 'TCP' || formData.protocol === 'UDP') && (
+                        <div>
+                          <Label htmlFor="port">Port *</Label>
+                          <Input
+                            id="port"
+                            name="port"
+                            type="number"
+                            value={formData.port || ''}
+                            onChange={handleInputChange}
+                            className="bg-zinc-800 border-zinc-700 text-white"
+                            required
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <Label htmlFor="check_interval">Check Interval (seconds) *</Label>
+                        <Input
+                          id="check_interval"
+                          name="check_interval"
+                          type="number"
+                          value={formData.check_interval || ''}
+                          onChange={handleInputChange}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="timeout">Timeout (seconds)</Label>
+                        <Input
+                          id="timeout"
+                          name="timeout"
+                          type="number"
+                          value={formData.timeout || ''}
+                          onChange={handleInputChange}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="alert_type">Alert Type</Label>
+                        <Select
+                          name="alert_type"
+                          value={formData.alert_type || ''}
+                          onValueChange={(value) => handleSelectChange('alert_type', value)}
+                        >
+                          <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                            <SelectValue placeholder="Select alert type" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
+                            <SelectItem value="email">Email</SelectItem>
+                            <SelectItem value="sms">SMS</SelectItem>
+                            <SelectItem value="webhook">Webhook</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="alert_threshold">Alert Threshold</Label>
+                        <Input
+                          id="alert_threshold"
+                          name="alert_threshold"
+                          type="number"
+                          value={formData.alert_threshold || ''}
+                          onChange={handleInputChange}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="expected_status_code">Expected Status Code</Label>
+                        <Input
+                          id="expected_status_code"
+                          name="expected_status_code"
+                          type="number"
+                          value={formData.expected_status_code || ''}
+                          onChange={handleInputChange}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="content_match">Content Match</Label>
+                        <Input
+                          id="content_match"
+                          name="content_match"
+                          value={formData.content_match || ''}
+                          onChange={handleInputChange}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="ssl_tls_check"
+                          name="ssl_tls_check"
+                          checked={formData.ssl_tls_check || false}
+                          onCheckedChange={(checked) => setFormData({ ...formData, ssl_tls_check: checked === true })}
+                        />
+                        <Label htmlFor="ssl_tls_check">SSL/TLS Check</Label>
+                      </div>
+                      <div>
+                        <Label htmlFor="auth_details">Authentication Details (JSON)</Label>
+                        <Textarea
+                          id="auth_details"
+                          name="auth_details"
+                          value={formData.auth_details ? JSON.stringify(formData.auth_details) : ''}
+                          onChange={(e) => {
+                            try {
+                              const parsedJson = JSON.parse(e.target.value);
+                              setFormData({ ...formData, auth_details: parsedJson });
+                            } catch (error) {
+                              // Handle invalid JSON input
+                            }
+                          }}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="retry_count">Retry Count</Label>
+                        <Input
+                          id="retry_count"
+                          name="retry_count"
+                          type="number"
+                          value={formData.retry_count || ''}
+                          onChange={handleInputChange}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="custom_headers">Custom Headers (JSON)</Label>
+                        <Textarea
+                          id="custom_headers"
+                          name="custom_headers"
+                          value={formData.custom_headers ? JSON.stringify(formData.custom_headers) : ''}
+                          onChange={(e) => {
+                            try {
+                              const parsedJson = JSON.parse(e.target.value);
+                              setFormData({ ...formData, custom_headers: parsedJson });
+                            } catch (error) {
+                              // Handle invalid JSON input
+                            }
+                          }}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="dns_query_type">DNS Query Type</Label>
+                        <Input
+                          id="dns_query_type"
+                          name="dns_query_type"
+                          value={formData.dns_query_type || ''}
+                          
+                          onChange={handleInputChange}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="ping_count">Ping Count</Label>
+                        <Input
+                          id="ping_count"
+                          name="ping_count"
+                          type="number"
+                          value={formData.ping_count || ''}
+                          onChange={handleInputChange}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                        />
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </form>
+              </div>
+              <DialogFooter className="flex-shrink-0 mt-4">
+                <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white" onClick={handleSubmit}>
+                  {isEditModalOpen ? 'Update' : 'Create'}
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         )}

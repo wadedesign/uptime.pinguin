@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import PasswordPrompt from '../components/PasswordPrompt';
-import { LayoutDashboard, Monitor, Settings } from 'lucide-react';
+import { LayoutDashboard, Monitor, Settings, LogOut, Bell, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function DashboardLayout({
@@ -66,7 +66,10 @@ export default function DashboardLayout({
   const navLinks = [
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { href: '/dashboard/monitors', label: 'Monitors', icon: Monitor },
+    { href: '/dashboard/incidents', label: 'Incidents', icon: AlertCircle },   
+    { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+    { href: '/', label: 'Logout', icon: LogOut },
   ];
 
   return (

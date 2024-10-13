@@ -1,0 +1,52 @@
+{
+    "protos": [
+        {
+            "name": "https",
+            "description": "HTTP/HTTPS monitor"
+        },
+        {
+            "name": "tcp",
+            "description": "TCP monitor"
+        },
+        {
+            "name": "icmp",
+            "description": "ICMP monitor"
+        },
+        {
+            "name": "dns",
+            "description": "DNS monitor"
+        },
+        {
+            "name": "smtp",
+            "description": "SMTP monitor"
+        },
+        {
+            "name": "pop3",
+            "description": "POP3 monitor"
+        },
+        {
+            "name": "imap",
+            "description": "IMAP monitor"
+        },
+        {
+            "name": "ftp",
+            "description": "FTP monitor"
+        },
+        {
+            "name": "ssh",
+            "description": "SSH monitor"
+        },
+        {
+            "name": "ntp",
+            "description": "NTP monitor"
+        },
+        {
+            "name": "ldap",
+            "description": "LDAP monitor"
+        },
+        {
+            "name": "snmp",
+            "description": "SNMP monitor"
+        }
+    ]
+}
