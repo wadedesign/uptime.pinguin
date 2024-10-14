@@ -20,9 +20,7 @@ export async function POST(req: NextRequest) {
     });
     console.log(`Ping result for ${trimmedIp}:`, result);
 
-    // Store the ping result
-    // Convert result.time to a number, or use 0 if it's "unknown"
-    const responseTime = typeof result.time === 'number' ? result.time : 0;
+    const responseTime = typeof result.time === 'number' ? Math.round(result.time) : 0;
     await storePingResult(monitorId, responseTime, result.alive);
 
     return NextResponse.json({

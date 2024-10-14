@@ -16,10 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 const navItems = [
-  { name: "Dashboard", icon: BarChart2, href: "/dashboard" },
-  { name: "Incidents", icon: Activity, href: "/incidents" },
-  { name: "Alerts", icon: Bell, href: "/alerts" },
-  { name: "Settings", icon: Settings, href: "/settings" },
+  { name: "Admin", icon: BarChart2, href: "/dashboard" },
 ]
 
 export default function Navbar() {

@@ -6,7 +6,6 @@ const pool = new Pool({
   connectionString: process.env.DB_URL,
 });
 
-// Create the ping_history table if it doesn't exist
 async function createPingHistoryTableIfNotExists() {
   const client = await pool.connect();
   try {
@@ -29,20 +28,18 @@ createPingHistoryTableIfNotExists().catch((error) => {
   console.error('Error creating ping_history table:', error);
 });
 
-// Function to store ping result
 export async function storePingResult(monitorId: string, responseTime: number, status: boolean) {
   const client = await pool.connect();
   try {
     await client.query(
       'INSERT INTO ping_history (monitor_id, response_time, status) VALUES ($1, $2, $3)',
-      [monitorId, responseTime, status]
+      [monitorId, Math.round(responseTime), status]
     );
   } finally {
     client.release();
   }
 }
 
-// Function to get ping history for a specific monitor
 export async function getPingHistory(monitorId: string, limit: number = 100) {
   const client = await pool.connect();
   try {
@@ -56,7 +53,6 @@ export async function getPingHistory(monitorId: string, limit: number = 100) {
   }
 }
 
-// Function to get the latest ping result for a specific monitor
 export async function getLatestPingResult(monitorId: string) {
   const client = await pool.connect();
   try {

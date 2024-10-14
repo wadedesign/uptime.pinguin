@@ -333,7 +333,7 @@ export default function MonitorManagement() {
                               const parsedJson = JSON.parse(e.target.value);
                               setFormData({ ...formData, auth_details: parsedJson });
                             } catch (error) {
-                              // Handle invalid JSON input
+                              // we need to handle this better
                             }
                           }}
                           className="bg-zinc-800 border-zinc-700 text-white"
