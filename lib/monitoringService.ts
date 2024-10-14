@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import axios from 'axios';
-import { storePingResult } from './getpinghistory';
+import { storePingResult } from './monitorPingOperations';
 
 const pool = new Pool({
   connectionString: process.env.DB_URL,

@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import PasswordPrompt from '../components/PasswordPrompt';
+import PasswordPrompt from '../components/SecureAccessPrompt';
 import { LayoutDashboard, Monitor, Settings, LogOut, Bell, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 

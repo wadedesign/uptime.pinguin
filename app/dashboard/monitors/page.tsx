@@ -1,6 +1,6 @@
 // app/dashboard/monitors/page.tsx
 
-import MonitorCreate from '../../components/monitors/create-one'
+import MonitorCreate from '../../components/monitors/MonitorManagement'
 
 export default function Monitors() {
   return (

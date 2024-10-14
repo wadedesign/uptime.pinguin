@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import ping from 'ping';
-import { storePingResult } from '@/lib/getpinghistory';
+import { storePingResult } from '@/lib/monitorPingOperations';
 
 export async function POST(req: NextRequest) {
   const { ip, timeout, monitorId } = await req.json();

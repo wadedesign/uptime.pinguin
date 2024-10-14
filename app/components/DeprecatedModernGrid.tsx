@@ -1,10 +1,12 @@
 // app/components/main-boi.tsx
+// DEPRECATED: This component is no longer in use. Kept for reference purposes only.
 
 'use client';
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity, BarChart2, Bell, Settings } from 'lucide-react';
-import MonitorPlaceholder from './monitors/create-one';
+import MonitorPlaceholder from './monitors/MonitorManagement';
 
 const modules = [
   { id: '1', title: 'Monitor', icon: <Activity className="h-5 w-5" />, component: <MonitorPlaceholder /> },

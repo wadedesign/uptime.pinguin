@@ -1,8 +1,8 @@
 // app/page.tsx
 
-import Navbar from "./components/status-nav";
-import PublicMonitorDashboard from "./components/monitors/v-main";
-import PublicIncidentDisplay from "./components/create/public-incident";
+import Navbar from "./components/MonitoringNavbar";
+import PublicMonitorDashboard from "./components/monitors/PublicMonitorDashboard";
+import PublicIncidentDisplay from "./components/create/PublicIncidentDisplay";
 
 export default function Home() {
   return (

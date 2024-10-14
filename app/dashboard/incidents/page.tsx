@@ -1,6 +1,6 @@
 // app/dashboard/incidents/page.tsx
 
-import IncidentCreate from '../../components/create/create-incident'
+import IncidentCreate from '../../components/create/IncidentManagement'
 
 export default function Incidents() {
   return (
