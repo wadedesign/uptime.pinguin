@@ -163,6 +163,18 @@ const VMDash: React.FC = () => {
     }
   }, []);
 
+  const checkMonitorStatus = useCallback(async (monitor: Monitor): Promise<Omit<MonitorStatus, 'id'>> => {
+    switch (monitor.protocol.toLowerCase()) {
+      case 'http':
+      case 'https':
+        return await checkHttpStatus(monitor);
+      case 'icmp':
+        return await checkPingStatus(monitor);
+      default:
+        throw new Error(`Unsupported protocol: ${monitor.protocol}`);
+    }
+  }, []);
+
   const checkMonitorStatuses = useCallback(async () => {
     const statuses = await Promise.all(
       monitors.map(async (monitor) => {
@@ -176,7 +188,7 @@ const VMDash: React.FC = () => {
       })
     );
     setMonitorStatuses(statuses);
-  }, [monitors]);
+  }, [monitors, checkMonitorStatus]);
 
   useEffect(() => {
     fetchMonitors();
@@ -189,18 +201,6 @@ const VMDash: React.FC = () => {
       return () => clearInterval(interval);
     }
   }, [monitors, checkMonitorStatuses]);
-
-  const checkMonitorStatus = async (monitor: Monitor): Promise<Omit<MonitorStatus, 'id'>> => {
-    switch (monitor.protocol.toLowerCase()) {
-      case 'http':
-      case 'https':
-        return await checkHttpStatus(monitor);
-      case 'icmp':
-        return await checkPingStatus(monitor);
-      default:
-        throw new Error(`Unsupported protocol: ${monitor.protocol}`);
-    }
-  };
 
   const checkHttpStatus = async (monitor: Monitor): Promise<Omit<MonitorStatus, 'id'>> => {
     try {

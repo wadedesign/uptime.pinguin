@@ -5,7 +5,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Activity, BarChart2, Bell, ChevronDown, Menu, Settings } from "lucide-react"
+import { Activity, BarChart2, Menu } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {

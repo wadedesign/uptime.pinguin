@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Get all incidents
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const client = await pool.connect();
     try {
@@ -114,24 +114,19 @@ export async function PUT(request: NextRequest) {
 
     const client = await pool.connect();
     try {
+      const { id, title, description, status, severity } = body;
       const result = await client.query(
         `UPDATE incidents SET
           title = $1, description = $2, status = $3, severity = $4, updated_at = NOW()
         WHERE id = $5 RETURNING id`,
-        [
-          body.title,
-          body.description || null,
-          body.status,
-          body.severity,
-          body.id
-        ]
+        [title, description || null, status, severity, id]
       );
 
       if (result.rowCount === 0) {
         return NextResponse.json({ success: false, message: 'Incident not found' }, { status: 404 });
       }
 
-      return NextResponse.json({ success: true, message: 'Incident updated successfully', incidentId: body.id });
+      return NextResponse.json({ success: true, message: 'Incident updated successfully', incidentId: id });
     } finally {
       client.release();
     }
@@ -143,28 +138,26 @@ export async function PUT(request: NextRequest) {
 
 // Delete an incident
 export async function DELETE(request: NextRequest) {
-  try {
     const { searchParams } = new URL(request.url);
     const incidentId = searchParams.get('id');
-
+  
     if (!incidentId) {
       return NextResponse.json({ success: false, message: 'Incident ID is required' }, { status: 400 });
     }
-
+  
     const client = await pool.connect();
     try {
       const result = await client.query('DELETE FROM incidents WHERE id = $1 RETURNING id', [incidentId]);
-
+  
       if (result.rowCount === 0) {
         return NextResponse.json({ success: false, message: 'Incident not found' }, { status: 404 });
       }
-
+  
       return NextResponse.json({ success: true, message: 'Incident deleted successfully', deletedId: incidentId });
+    } catch (error) {
+      console.error('Error deleting incident:', error);
+      return NextResponse.json({ success: false, message: 'Error deleting incident' }, { status: 500 });
     } finally {
       client.release();
     }
-  } catch (error) {
-    console.error('Error deleting incident:', error);
-    return NextResponse.json({ success: false, message: 'Error deleting incident' }, { status: 500 });
   }
-}

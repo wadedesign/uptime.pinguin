@@ -33,7 +33,7 @@ const PublicIncidentDisplay: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchIncidents = async () => {
+  const fetchIncidents = React.useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -41,20 +41,30 @@ const PublicIncidentDisplay: React.FC = () => {
       const monitorsResponse = await axios.get('/api/createmonitor');
       setIncidents(incidentsResponse.data.incidents);
       setMonitors(monitorsResponse.data.monitors);
+      toast({
+        title: "Data refreshed",
+        description: "Incident information has been updated.",
+        variant: "default",
+      });
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Unable to load incident information. Please try again later.');
+      toast({
+        title: "Error",
+        description: "Failed to fetch incident information. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchIncidents();
     // Set up polling every 5 minutes
     const interval = setInterval(fetchIncidents, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchIncidents]);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {

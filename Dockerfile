@@ -23,3 +23,14 @@ RUN chmod +x /app/start.sh
 EXPOSE 4999
 
 CMD ["/app/start.sh"]
+
+
+# how to build docker image
+# docker build -t uptime-pinguin .
+
+# how to run docker image
+# docker run -d -p 4999:4999 uptime-pinguin
+
+# how to check docker logs
+# docker logs uptime-pinguin
+

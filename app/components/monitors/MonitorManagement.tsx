@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit, Trash2, X } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -28,9 +28,9 @@ type Monitor = {
   expected_status_code?: number;
   content_match?: string;
   ssl_tls_check?: boolean;
-  auth_details?: Record<string, any>;
+  auth_details?: Record<string, unknown>;
   retry_count?: number;
-  custom_headers?: Record<string, any>;
+  custom_headers?: Record<string, unknown>;
   dns_query_type?: string;
   ping_count?: number;
 };
@@ -333,7 +333,8 @@ export default function MonitorManagement() {
                               const parsedJson = JSON.parse(e.target.value);
                               setFormData({ ...formData, auth_details: parsedJson });
                             } catch (error) {
-                              // we need to handle this better
+                              // Handle the error (e.g., show a validation message)
+                              console.error('Invalid JSON for auth_details:', error);
                             }
                           }}
                           className="bg-zinc-800 border-zinc-700 text-white"
@@ -361,7 +362,8 @@ export default function MonitorManagement() {
                               const parsedJson = JSON.parse(e.target.value);
                               setFormData({ ...formData, custom_headers: parsedJson });
                             } catch (error) {
-                              // Handle invalid JSON input
+                              // Handle the error (e.g., show a validation message)
+                              console.error('Invalid JSON for custom_headers:', error);
                             }
                           }}
                           className="bg-zinc-800 border-zinc-700 text-white"

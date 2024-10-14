@@ -1,9 +1,8 @@
 // api/protectpage/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { hash, compare } from 'bcrypt';
 import { Pool } from 'pg';
-import { randomBytes, createHmac } from 'crypto';
+import { createHmac } from 'crypto';
 import { LRUCache } from 'lru-cache';
 
 
@@ -44,11 +43,6 @@ const rateLimitCache = new LRUCache({
 });
 
 const CSRF_SECRET = process.env.CSRF_SECRET!; // i make you get a secret key for this
-
-interface LoginRequest {
-  password: string;
-  csrfToken: string;
-}
 
 export async function GET(request: NextRequest) {
   const session = await getSession(request);

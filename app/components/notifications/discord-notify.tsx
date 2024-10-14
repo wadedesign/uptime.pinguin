@@ -3,12 +3,11 @@
 
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
@@ -35,43 +34,10 @@ const DiscordNotify: React.FC = () => {
   const [isWatching, setIsWatching] = useState<boolean>(false);
   const [monitorStatuses, setMonitorStatuses] = useState<MonitorStatus[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const [isAutoNotifyEnabled, setIsAutoNotifyEnabled] = useState<boolean>(false);
 
-  useEffect(() => {
-    fetchMonitors();
-  }, []);
-
-  useEffect(() => {
-    if (selectedMonitor) {
-      fetchWebhookUrl(selectedMonitor);
-      fetchAutoNotifySettings(selectedMonitor);
-    }
-  }, [selectedMonitor]);
-
-  useEffect(() => {
-    if (isWatching && selectedMonitor) {
-      // Instead of checking statuses, just fetch the latest status periodically
-      const interval = setInterval(() => {
-        fetchLatestStatus(selectedMonitor);
-      }, 60000); // Check every minute
-
-      return () => clearInterval(interval);
-    }
-  }, [isWatching, selectedMonitor]);
-
-  const fetchMonitors = async () => {
-    try {
-      const response = await axios.get('/api/createmonitor');
-      setMonitors(response.data.monitors);
-    } catch (error) {
-      console.error('Error fetching monitors:', error);
-      setError('Failed to fetch monitors. Please try again later.');
-    }
-  };
-
-  const fetchWebhookUrl = async (monitorId: string) => {
+  const fetchWebhookUrl = React.useCallback(async (monitorId: string) => {
     try {
       const response = await fetch(`/api/notifications/discord?monitorId=${monitorId}`, {
         method: 'GET',
@@ -91,9 +57,9 @@ const DiscordNotify: React.FC = () => {
         description: "Failed to fetch webhook URL. Please try again.",
       });
     }
-  };
+  }, [toast]);
 
-  const fetchAutoNotifySettings = async (monitorId: string) => {
+  const fetchAutoNotifySettings = React.useCallback(async (monitorId: string) => {
     try {
       const response = await fetch(`/api/notifications/discord?autoNotifications&monitorId=${monitorId}`, {
         method: 'GET',
@@ -111,7 +77,54 @@ const DiscordNotify: React.FC = () => {
         description: "Failed to fetch auto notification settings. Please try again.",
       });
     }
-  };
+  }, [toast]);
+
+  const fetchLatestStatus = React.useCallback(async (monitorId: string) => {
+    try {
+      const response = await axios.get(`/api/monitor-status?monitorId=${monitorId}`);
+      const latestStatus = response.data.status;
+      setMonitorStatuses(prevStatuses => 
+        prevStatuses.map(s => s.id === monitorId ? { ...s, ...latestStatus } : s)
+      );
+    } catch (error) {
+      console.error('Error fetching latest status:', error);
+    }
+  }, []);
+
+  const fetchMonitors = React.useCallback(async () => {
+    try {
+      const response = await axios.get('/api/createmonitor');
+      setMonitors(response.data.monitors);
+    } catch (error) {
+      console.error('Error fetching monitors:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch monitors. Please try again later.",
+      });
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    fetchMonitors();
+  }, [fetchMonitors]);
+
+  useEffect(() => {
+    if (selectedMonitor) {
+      fetchWebhookUrl(selectedMonitor);
+      fetchAutoNotifySettings(selectedMonitor);
+    }
+  }, [selectedMonitor, fetchWebhookUrl, fetchAutoNotifySettings]);
+
+  useEffect(() => {
+    if (isWatching && selectedMonitor) {
+      const interval = setInterval(() => {
+        fetchLatestStatus(selectedMonitor);
+      }, 60000);
+
+      return () => clearInterval(interval);
+    }
+  }, [isWatching, selectedMonitor, fetchLatestStatus]);
 
   const handleSaveWebhook = async () => {
     if (!selectedMonitor || !webhookUrl) {
@@ -257,18 +270,6 @@ const DiscordNotify: React.FC = () => {
         title: "Error",
         description: "An error occurred while updating monitor watching settings",
       });
-    }
-  };
-
-  const fetchLatestStatus = async (monitorId: string) => {
-    try {
-      const response = await axios.get(`/api/monitor-status?monitorId=${monitorId}`);
-      const latestStatus = response.data.status;
-      setMonitorStatuses(prevStatuses => 
-        prevStatuses.map(s => s.id === monitorId ? { ...s, ...latestStatus } : s)
-      );
-    } catch (error) {
-      console.error('Error fetching latest status:', error);
     }
   };
 

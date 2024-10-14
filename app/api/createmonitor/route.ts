@@ -138,6 +138,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Port is required for TCP/UDP monitoring' }, { status: 400 });
     }
 
+    // For ICMP, we don't need a port
+    if (body.protocol === 'ICMP') {
+      body.port = null;
+    }
+
     const client = await pool.connect();
     try {
       const result = await client.query(
@@ -151,7 +156,7 @@ export async function PUT(request: NextRequest) {
           body.name,
           body.url_ip_address,
           body.protocol,
-          body.port || null,
+          body.port,
           body.check_interval,
           body.timeout || null,
           body.alert_type || null,
