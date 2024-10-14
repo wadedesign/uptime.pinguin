@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://your-image-url-here.com/uptime-pinguin-logo.png" alt="Uptime Pinguin Logo" width="200"/>
+  <img src="public/github/Uptim logo.png" alt="Uptime Pinguin Logo" width="200"/>
 
   # Uptime Pinguin
 
