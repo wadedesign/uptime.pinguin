@@ -1,52 +1,9 @@
 // app/api/notifications/discord/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { pool, ensureNotificationTablesExist } from '@/lib/createdbs/notificationSchema';
 
-const pool = new Pool({
-  connectionString: process.env.DB_URL,
-});
-
-async function ensureTablesExist() {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS monitors (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        alert_type VARCHAR(50)
-      )
-    `);
-
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS discord_webhooks (
-        monitor_id INTEGER PRIMARY KEY REFERENCES monitors(id),
-        webhook_url TEXT NOT NULL
-      )
-    `);
-
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS auto_notifications (
-        monitor_id INTEGER PRIMARY KEY REFERENCES monitors(id),
-        is_enabled BOOLEAN DEFAULT false,
-        is_watching BOOLEAN DEFAULT false
-      )
-    `);
-
-    await client.query('COMMIT');
-    console.log('Tables created successfully');
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error creating tables:', error);
-  } finally {
-    client.release();
-  }
-}
-
-// Call this function at the beginning of each route handler
 async function initializeDatabase() {
-  await ensureTablesExist();
+  await ensureNotificationTablesExist();
 }
 
 async function sendDiscordNotification(webhookUrl: string, message: string) {
