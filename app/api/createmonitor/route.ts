@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
 }
 
 // get all monitors
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const client = await pool.connect();
     try {
