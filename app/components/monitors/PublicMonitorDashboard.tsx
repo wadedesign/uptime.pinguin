@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, CheckCircle, RefreshCw, Clock, Globe, Server, AlertTriangle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Monitor {
@@ -62,7 +61,7 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
 
 const MonitorCard: React.FC<{ monitor: Monitor; status: MonitorStatus | undefined; onRefresh: () => void }> = ({ monitor, status, onRefresh }) => {
   return (
-    <Card className="overflow-hidden bg-zinc-900/70 border-zinc-700 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card className="overflow-hidden bg-zinc-900/70 border-zinc-700 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
       <CardHeader className="bg-zinc-800/50 border-b border-zinc-700 pb-3">
         <CardTitle className="flex items-center justify-between text-white">
           <span className="text-lg font-semibold truncate">{monitor.name}</span>
@@ -73,30 +72,32 @@ const MonitorCard: React.FC<{ monitor: Monitor; status: MonitorStatus | undefine
           </AnimatePresence>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 space-y-4 text-zinc-300">
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="col-span-2 flex items-center space-x-2 bg-zinc-800/30 p-2 rounded-md">
+      <CardContent className="p-4 space-y-4 text-zinc-300 flex-grow">
+        <div className="space-y-3 text-sm">
+          <div className="flex items-center space-x-2 bg-zinc-800/30 p-2 rounded-md">
             <Globe className="w-4 h-4 text-teal-400" />
             <span className="font-medium text-zinc-100">{monitor.url_ip_address}</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <Server className="w-4 h-4 text-teal-400" />
-            <span className="font-medium">Protocol:</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Server className="w-4 h-4 text-teal-400" />
+              <span className="font-medium">Protocol:</span>
+            </div>
+            <div>{monitor.protocol.toUpperCase()}</div>
           </div>
-          <div>{monitor.protocol.toUpperCase()}</div>
           {monitor.port && (
-            <>
-              <div className="flex items-center space-x-2">
-                <span className="font-medium">Port:</span>
-              </div>
+            <div className="flex items-center justify-between">
+              <span className="font-medium">Port:</span>
               <div>{monitor.port}</div>
-            </>
+            </div>
           )}
-          <div className="flex items-center space-x-2">
-            <Clock className="w-4 h-4 text-teal-400" />
-            <span className="font-medium">Interval:</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Clock className="w-4 h-4 text-teal-400" />
+              <span className="font-medium">Interval:</span>
+            </div>
+            <div>{monitor.check_interval}s</div>
           </div>
-          <div>{monitor.check_interval}s</div>
         </div>
         {status && status.responseTime && (
           <TooltipProvider>
@@ -123,7 +124,7 @@ const MonitorCard: React.FC<{ monitor: Monitor; status: MonitorStatus | undefine
           </TooltipProvider>
         )}
       </CardContent>
-      <CardFooter className="bg-zinc-800/50 border-t border-zinc-700 p-3">
+      <CardFooter className="bg-zinc-800/50 border-t border-zinc-700 p-3 mt-auto">
         <Button 
           variant="outline" 
           size="sm" 
@@ -138,7 +139,7 @@ const MonitorCard: React.FC<{ monitor: Monitor; status: MonitorStatus | undefine
   );
 };
 
-const PublicMonitorDashboard: React.FC = () => {
+export default function PublicMonitorDashboard() {
   const [monitors, setMonitors] = useState<Monitor[]>([]);
   const [monitorStatuses, setMonitorStatuses] = useState<MonitorStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -244,7 +245,7 @@ const PublicMonitorDashboard: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 pt-32 text-white">Service Status Dashboard</h1>
         <Skeleton className="h-10 w-64 mb-6 bg-zinc-800" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {[...Array(6)].map((_, index) => (
             <Card key={index} className="overflow-hidden bg-zinc-900/70 border-zinc-700 backdrop-blur-sm shadow-lg">
               <CardHeader className="bg-zinc-800/50 border-b border-zinc-700">
@@ -293,7 +294,7 @@ const PublicMonitorDashboard: React.FC = () => {
           <p className="text-sm text-zinc-400 mt-1">Last updated: {new Date().toLocaleString()}</p>
         </CardContent>
       </Card>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {monitors.map((monitor) => (
           <MonitorCard
             key={monitor.id}
@@ -305,6 +306,4 @@ const PublicMonitorDashboard: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default PublicMonitorDashboard;
+}

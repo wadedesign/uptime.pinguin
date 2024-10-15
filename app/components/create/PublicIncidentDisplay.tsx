@@ -99,7 +99,7 @@ const PublicIncidentDisplay: React.FC = () => {
   };
 
   return (
-    <div className="bg-gradient-to-b from-black to-zinc-900 min-h-screen p-6">
+    <div className="min-h-screen p-6">
       <Card className="w-full bg-zinc-900/50 border-zinc-800 backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
