@@ -1,6 +1,6 @@
 // app/dashboard/incidents/page.tsx
 
-import DiscordNotify from '../../components/notifications/discord-notify'
+import DiscordNotify from '../../components/notifications/DiscordSettings'
 
 export default function Noty() {
   return (
