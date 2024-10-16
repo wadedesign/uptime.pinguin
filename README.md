@@ -5,6 +5,7 @@
 
   <p>
     <strong>Open-source uptime monitoring made simple and powerful</strong>
+    <strong> Not Production Ready yet, but feel free to try it out!</strong>
   </p>
 
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
