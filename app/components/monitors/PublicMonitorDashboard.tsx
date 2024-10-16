@@ -159,6 +159,53 @@ export default function PublicMonitorDashboard() {
     }
   }, []);
 
+  const checkHttpStatus = async (monitor: Monitor): Promise<Omit<MonitorStatus, 'id'>> => {
+    try {
+      const response = await axios.post('/api/connection-handlers/https', {
+        url: monitor.protocol.toLowerCase() === 'https' ? `https://${monitor.url_ip_address}` : `http://${monitor.url_ip_address}`,
+        method: 'GET',
+        timeout: 5000, // 5 seconds timeout
+        monitorId: monitor.id,
+      });
+      return {
+        status: response.data.status < 400 ? 'up' : 'down',
+        responseTime: response.data.responseTime,
+      };
+    } catch (error) {
+      console.error(`Error checking HTTP(S) status for ${monitor.url_ip_address}:`, error);
+      return { status: 'down' };
+    }
+  };
+
+  const checkPingStatus = async (monitor: Monitor): Promise<Omit<MonitorStatus, 'id'>> => {
+    try {
+      const response = await axios.post('/api/connection-handlers/ping', {
+        ip: monitor.url_ip_address.trim(),
+        timeout: 5000, // 5 seconds timeout
+        monitorId: monitor.id,
+      });
+      return {
+        status: response.data.alive ? 'up' : 'down',
+        responseTime: response.data.time !== 'unknown' ? Math.round(parseFloat(response.data.time)) : undefined,
+      };
+    } catch (error) {
+      console.error(`Error pinging ${monitor.url_ip_address}:`, error);
+      return { status: 'down' };
+    }
+  };
+
+  const checkMonitorStatus = useCallback(async (monitor: Monitor): Promise<Omit<MonitorStatus, 'id'>> => {
+    switch (monitor.protocol.toLowerCase()) {
+      case 'http':
+      case 'https':
+        return await checkHttpStatus(monitor);
+      case 'icmp':
+        return await checkPingStatus(monitor);
+      default:
+        throw new Error(`Unsupported protocol: ${monitor.protocol}`);
+    }
+  }, []);
+
   const checkMonitorStatuses = useCallback(async () => {
     const statuses = await Promise.all(
       monitors.map(async (monitor) => {
@@ -172,7 +219,7 @@ export default function PublicMonitorDashboard() {
       })
     );
     setMonitorStatuses(statuses);
-  }, [monitors]);
+  }, [monitors, checkMonitorStatus]);
 
   useEffect(() => {
     fetchMonitors();
@@ -185,40 +232,6 @@ export default function PublicMonitorDashboard() {
       return () => clearInterval(interval);
     }
   }, [monitors, checkMonitorStatuses]);
-
-  const checkMonitorStatus = async (monitor: Monitor): Promise<Omit<MonitorStatus, 'id'>> => {
-    const protocol = monitor.protocol.toLowerCase();
-    const handler = protocolHandlers[protocol as keyof typeof protocolHandlers];
-
-    if (!handler) {
-      throw new Error(`Unsupported protocol: ${protocol}`);
-    }
-
-    try {
-      const response = await axios.post(handler, {
-        url: protocol === 'https' ? `https://${monitor.url_ip_address}` : `http://${monitor.url_ip_address}`,
-        ip: monitor.url_ip_address.trim(),
-        method: 'GET',
-        timeout: 5000,
-        monitorId: monitor.id,
-      });
-
-      if (protocol === 'icmp') {
-        return {
-          status: response.data.alive ? 'up' : 'down',
-          responseTime: response.data.time !== 'unknown' ? parseFloat(response.data.time) : undefined,
-        };
-      } else {
-        return {
-          status: response.data.status < 400 ? 'up' : 'down',
-          responseTime: response.data.responseTime,
-        };
-      }
-    } catch (error) {
-      console.error(`Error checking status for ${monitor.url_ip_address}:`, error);
-      return { status: 'down' };
-    }
-  };
 
   const handleRefresh = async (monitorId: string) => {
     const monitor = monitors.find((m) => m.id === monitorId);
