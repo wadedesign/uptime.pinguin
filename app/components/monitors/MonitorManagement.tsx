@@ -1,10 +1,8 @@
-// app/components/monitors/create-one.tsx
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Activity, Clock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -14,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Badge } from "@/components/ui/badge"
 
 type Monitor = {
   id: string;
@@ -136,13 +135,13 @@ export default function MonitorManagement() {
   };
 
   return (
-    <div className="min-h-screen p-8">
-      <Card className="bg-zinc-900 border-zinc-800 mb-8">
+    <div className="min-h-screen p-8 ">
+      <Card className="bg-zinc-900/50 border-zinc-800 mb-8 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-2xl font-light text-white flex justify-between items-center">
-            Monitor Management
-            <Button onClick={openAddModal} className="bg-teal-600 hover:bg-teal-700 text-white">
-              <Plus size={20} className="mr-2" /> Add Monitor
+          <CardTitle className="text-3xl font-bold text-white flex justify-between items-center">
+            Monitor Dashboard
+            <Button onClick={openAddModal} className="bg-teal-600 hover:bg-teal-700 text-white rounded-full">
+              <Plus size={24} />
             </Button>
           </CardTitle>
         </CardHeader>
@@ -152,23 +151,35 @@ export default function MonitorManagement() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         {monitors.map((monitor) => (
-          <Card key={monitor.id} className="bg-zinc-900 border-zinc-800">
-            <CardHeader>
-              <CardTitle className="text-lg font-medium text-white">{monitor.name}</CardTitle>
+          <Card key={monitor.id} className="bg-zinc-900/50 border-zinc-800 backdrop-blur-sm hover:shadow-lg transition-shadow duration-300">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl font-semibold text-white flex items-center">
+                <Activity size={20} className="mr-2 text-teal-500" />
+                {monitor.name}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-zinc-400 mb-1">{monitor.url_ip_address}</p>
-              <p className="text-zinc-400 mb-4">{monitor.protocol} - Interval: {monitor.check_interval}s</p>
+              <div className="flex items-center mb-2">
+                <Globe size={16} className="mr-2 text-zinc-400" />
+                <p className="text-zinc-300">{monitor.url_ip_address}</p>
+              </div>
+              <div className="flex items-center mb-4">
+                <Clock size={16} className="mr-2 text-zinc-400" />
+                <p className="text-zinc-300">Interval: {monitor.check_interval}s</p>
+              </div>
+              <Badge variant="outline" className="bg-zinc-800 text-teal-400 border-teal-400">
+                {monitor.protocol}
+              </Badge>
             </CardContent>
             <CardFooter className="flex justify-end space-x-2">
-              <Button variant="outline" size="sm" onClick={() => openEditModal(monitor)} className="bg-zinc-800 text-white hover:bg-zinc-700">
-                <Edit size={16} className="mr-2" /> Edit
+              <Button variant="ghost" size="sm" onClick={() => openEditModal(monitor)} className="text-teal-400 hover:text-teal-300 hover:bg-zinc-800">
+                <Edit size={16} className="mr-1" /> Edit
               </Button>
-              <Button variant="outline" size="sm" onClick={() => openDeleteModal(monitor)} className="bg-zinc-800 text-white hover:bg-zinc-700">
-                <Trash2 size={16} className="mr-2" /> Delete
+              <Button variant="ghost" size="sm" onClick={() => openDeleteModal(monitor)} className="text-red-400 hover:text-red-300 hover:bg-zinc-800">
+                <Trash2 size={16} className="mr-1" /> Delete
               </Button>
             </CardFooter>
           </Card>
@@ -333,7 +344,6 @@ export default function MonitorManagement() {
                               const parsedJson = JSON.parse(e.target.value);
                               setFormData({ ...formData, auth_details: parsedJson });
                             } catch (error) {
-                              // Handle the error (e.g., show a validation message)
                               console.error('Invalid JSON for auth_details:', error);
                             }
                           }}
@@ -362,20 +372,19 @@ export default function MonitorManagement() {
                               const parsedJson = JSON.parse(e.target.value);
                               setFormData({ ...formData, custom_headers: parsedJson });
                             } catch (error) {
-                              // Handle the error (e.g., show a validation message)
                               console.error('Invalid JSON for custom_headers:', error);
                             }
                           }}
                           className="bg-zinc-800 border-zinc-700 text-white"
                         />
                       </div>
+                      
                       <div>
                         <Label htmlFor="dns_query_type">DNS Query Type</Label>
                         <Input
                           id="dns_query_type"
                           name="dns_query_type"
                           value={formData.dns_query_type || ''}
-                          
                           onChange={handleInputChange}
                           className="bg-zinc-800 border-zinc-700 text-white"
                         />

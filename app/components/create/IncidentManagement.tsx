@@ -4,6 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertCircle, AlertTriangle, Info, Edit2, Trash2 } from "lucide-react";
+import { AlertCircle, AlertTriangle, Info, Edit2, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
+import Image from 'next/image';
 
 interface Monitor {
   id: string;
@@ -31,7 +32,7 @@ interface Incident {
   updated_at: string;
 }
 
-const CoolIncidentManagement: React.FC = () => {
+const EnhancedIncidentManagement: React.FC = () => {
   const [monitors, setMonitors] = useState<Monitor[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [formData, setFormData] = useState({
@@ -173,179 +174,228 @@ const CoolIncidentManagement: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 p-6 min-h-screen bg-gray-900 text-white">
-      <Card className="w-full lg:w-1/3 bg-gradient-to-b from-gray-800 to-gray-900 text-white shadow-xl">
-        <CardContent className="p-6">
-          <h2 className="text-2xl font-bold mb-6 text-center">
-            {formData.id ? 'Update Incident' : 'Create New Incident'}
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="selectedMonitor" className="text-gray-300">Affected Monitor</Label>
-              <Select onValueChange={handleSelectChange('selectedMonitor')} value={formData.selectedMonitor}>
-                <SelectTrigger id="selectedMonitor" className="bg-gray-700 border-gray-600 text-white">
-                  <SelectValue placeholder="Select a monitor" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  {monitors.map((monitor) => (
-                    <SelectItem key={monitor.id} value={monitor.id} className="text-white hover:bg-gray-700">
-                      {monitor.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-gray-300">Title</Label>
-              <Input
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                placeholder="Incident title"
-                required
-                className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-gray-300">Description</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Describe the incident"
-                rows={4}
-                className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="status" className="text-gray-300">Status</Label>
-                <Select onValueChange={handleSelectChange('status')} value={formData.status}>
-                  <SelectTrigger id="status" className="bg-gray-700 border-gray-600 text-white">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700">
-                    <SelectItem value="investigating" className="text-white hover:bg-gray-700">Investigating</SelectItem>
-                    <SelectItem value="identified" className="text-white hover:bg-gray-700">Identified</SelectItem>
-                    <SelectItem value="monitoring" className="text-white hover:bg-gray-700">Monitoring</SelectItem>
-                    <SelectItem value="resolved" className="text-white hover:bg-gray-700">Resolved</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="severity" className="text-gray-300">Severity</Label>
-                <Select onValueChange={handleSelectChange('severity')} value={formData.severity}>
-                  <SelectTrigger id="severity" className="bg-gray-700 border-gray-600 text-white">
-                    <SelectValue placeholder="Select severity" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700">
-                    {['low', 'medium', 'high', 'critical'].map((level) => (
-                      <SelectItem key={level} value={level} className="text-white hover:bg-gray-700">
-                        <div className="flex items-center">
-                          {getSeverityIcon(level)}
-                          <span className="ml-2 capitalize">{level}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex justify-end space-x-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setFormData({
-                  id: '',
-                  title: '',
-                  description: '',
-                  status: '',
-                  severity: '',
-                  selectedMonitor: '',
-                })}
-                className="bg-gray-700 text-white border-gray-600 hover:bg-gray-600"
-              >
-                Clear
-              </Button>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="bg-blue-600 text-white hover:bg-blue-700"
-              >
-                {isLoading ? 'Processing...' : (formData.id ? 'Update Incident' : 'Create Incident')}
-              </Button>
-            </div>
-          </form>
-          {error && (
+    <div className="flex flex-col gap-8 p-6 min-h-screen text-white">
+      <motion.div
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="w-full max-w-5xl mx-auto"
+      >
+        <Card className="bg-zinc-900 border-zinc-800 shadow-xl">
+          <CardContent className="p-8">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mt-4 p-4 bg-red-900 text-white rounded-md"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex justify-center mb-6"
             >
-              <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 mr-2" />
-                <span>{error}</span>
-              </div>
+              <Image
+                src="/github/Uptim logo.png"
+                alt="Uptim Logo"
+                width={80}
+                height={80}
+                className="rounded-full"
+              />
             </motion.div>
-          )}
-        </CardContent>
-      </Card>
-      <Card className="w-full lg:w-2/3 bg-gradient-to-b from-gray-800 to-gray-900 text-white shadow-xl overflow-hidden">
-        <CardContent className="p-6">
-          <h2 className="text-2xl font-bold mb-6 text-center">Incident List</h2>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-white">Title</TableHead>
-                  <TableHead className="text-white">Status</TableHead>
-                  <TableHead className="text-white">Severity</TableHead>
-                  <TableHead className="text-white">Created At</TableHead>
-                  <TableHead className="text-white">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {incidents.map((incident) => (
-                  <TableRow key={incident.id}>
-                    <TableCell className="font-medium">{incident.title}</TableCell>
-                    <TableCell>{incident.status}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        {getSeverityIcon(incident.severity)}
-                        <span className="ml-2 capitalize">{incident.severity}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{new Date(incident.created_at).toLocaleString()}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          onClick={() => handleEdit(incident)}
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDelete(incident.id)}
-                          size="sm"
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <h2 className="text-3xl font-bold mb-6 text-center text-teal-400">
+              Incident Management
+            </h2>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key="form"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+              >
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="selectedMonitor" className="text-zinc-300">Affected Monitor</Label>
+                      <Select onValueChange={handleSelectChange('selectedMonitor')} value={formData.selectedMonitor}>
+                        <SelectTrigger id="selectedMonitor" className="bg-zinc-800 border-zinc-700 text-white">
+                          <SelectValue placeholder="Select a monitor" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-800 border-zinc-700">
+                          {monitors.map((monitor) => (
+                            <SelectItem key={monitor.id} value={monitor.id} className="text-white hover:bg-zinc-700">
+                              {monitor.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="title" className="text-zinc-300">Title</Label>
+                      <Input
+                        id="title"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        placeholder="Incident title"
+                        required
+                        className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description" className="text-zinc-300">Description</Label>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      placeholder="Describe the incident"
+                      rows={4}
+                      className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="status" className="text-zinc-300">Status</Label>
+                      <Select onValueChange={handleSelectChange('status')} value={formData.status}>
+                        <SelectTrigger id="status" className="bg-zinc-800 border-zinc-700 text-white">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-800 border-zinc-700">
+                          <SelectItem value="investigating" className="text-white hover:bg-zinc-700">Investigating</SelectItem>
+                          <SelectItem value="identified" className="text-white hover:bg-zinc-700">Identified</SelectItem>
+                          <SelectItem value="monitoring" className="text-white hover:bg-zinc-700">Monitoring</SelectItem>
+                          <SelectItem value="resolved" className="text-white hover:bg-zinc-700">Resolved</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="severity" className="text-zinc-300">Severity</Label>
+                      <Select onValueChange={handleSelectChange('severity')} value={formData.severity}>
+                        <SelectTrigger id="severity" className="bg-zinc-800 border-zinc-700 text-white">
+                          <SelectValue placeholder="Select severity" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-800 border-zinc-700">
+                          {['low', 'medium', 'high', 'critical'].map((level) => (
+                            <SelectItem key={level} value={level} className="text-white hover:bg-zinc-700">
+                              <div className="flex items-center">
+                                {getSeverityIcon(level)}
+                                <span className="ml-2 capitalize">{level}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-4">
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setFormData({
+                          id: '',
+                          title: '',
+                          description: '',
+                          status: '',
+                          severity: '',
+                          selectedMonitor: '',
+                        })}
+                        className="bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                      >
+                        Clear
+                      </Button>
+                    </motion.div>
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button
+                        type="submit"
+                        disabled={isLoading}
+                        className="bg-teal-600 hover:bg-teal-700 text-white"
+                      >
+                        {isLoading ? 'Processing...' : (formData.id ? 'Update Incident' : 'Create Incident')}
+                      </Button>
+                    </motion.div>
+                  </div>
+                </form>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="mt-4 p-4 bg-red-900/50 text-white rounded-md"
+                  >
+                    <div className="flex items-center">
+                      <AlertCircle className="h-5 w-5 mr-2" />
+                      <span>{error}</span>
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+        className="w-full max-w-5xl mx-auto"
+      >
+        <Card className="bg-zinc-900 border-zinc-800 shadow-xl overflow-hidden">
+          <CardContent className="p-6">
+            <h2 className="text-2xl font-bold mb-6 text-center text-teal-400">Incident List</h2>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-zinc-800">
+                    <TableHead className="text-teal-400">Title</TableHead>
+                    <TableHead className="text-teal-400">Status</TableHead>
+                    <TableHead className="text-teal-400">Severity</TableHead>
+                    <TableHead className="text-teal-400">Created At</TableHead>
+                    <TableHead className="text-teal-400">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {incidents.map((incident) => (
+                    <TableRow key={incident.id} className="hover:bg-zinc-800 text-white transition-colors">
+                      <TableCell className="font-medium">{incident.title}</TableCell>
+                      <TableCell>{incident.status}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          {getSeverityIcon(incident.severity)}
+                          <span className="ml-2 capitalize">{incident.severity}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{new Date(incident.created_at).toLocaleString()}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                            <Button
+                              onClick={() => handleEdit(incident)}
+                              size="sm"
+                              className="bg-blue-600 hover:bg-blue-700"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          </motion.div>
+                          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                            <Button
+                              onClick={() => handleDelete(incident.id)}
+                              size="sm"
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </motion.div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };
 
-export default CoolIncidentManagement;
+export default EnhancedIncidentManagement;

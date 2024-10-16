@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, CheckCircle, RefreshCw, Clock, Globe, Server } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 interface Monitor {
   id: string;
@@ -53,18 +55,18 @@ const PingHistory: React.FC<{ monitorId: string }> = ({ monitorId }) => {
   }, [monitorId]);
 
   const getBlockColor = (responseTime: number) => {
-    if (responseTime < 100) return 'bg-green-500';
-    if (responseTime < 300) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (responseTime < 100) return 'bg-green-600';
+    if (responseTime < 300) return 'bg-yellow-600';
+    return 'bg-red-600';
   };
 
   if (isLoading) {
-    return <Skeleton className="h-6 w-full" />;
+    return <Skeleton className="h-6 w-full bg-zinc-700" />;
   }
 
   return (
     <div className="mt-4">
-      <h3 className="text-sm font-semibold mb-2">Ping History (Last 20)</h3>
+      <h3 className="text-sm font-semibold mb-2 text-teal-400">Ping History (Last 20)</h3>
       <div className="flex flex-wrap gap-1">
         {pingHistory.map((ping, index) => (
           <TooltipProvider key={index}>
@@ -74,7 +76,7 @@ const PingHistory: React.FC<{ monitorId: string }> = ({ monitorId }) => {
                   className={`w-4 h-4 rounded-sm ${getBlockColor(ping.response_time)}`}
                 />
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-zinc-800 border-zinc-700 text-zinc-300">
                 <p>{new Date(ping.timestamp).toLocaleString()}</p>
                 <p>{ping.response_time}ms</p>
               </TooltipContent>
@@ -88,8 +90,8 @@ const PingHistory: React.FC<{ monitorId: string }> = ({ monitorId }) => {
 
 const MonitorCard: React.FC<{ monitor: Monitor; status: MonitorStatus | undefined; onRefresh: () => void }> = ({ monitor, status, onRefresh }) => {
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="bg-primary text-primary-foreground">
+    <Card className="overflow-hidden bg-zinc-800 border-zinc-700">
+      <CardHeader className="bg-zinc-800 text-teal-400">
         <CardTitle className="flex items-center justify-between">
           <span>{monitor.name}</span>
           {status && (
@@ -100,15 +102,15 @@ const MonitorCard: React.FC<{ monitor: Monitor; status: MonitorStatus | undefine
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 space-y-4">
+      <CardContent className="p-4 space-y-4 text-zinc-300">
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="flex items-center">
-            <Globe className="w-4 h-4 mr-2" />
+            <Globe className="w-4 h-4 mr-2 text-teal-400" />
             <span className="font-semibold">URL/IP:</span>
           </div>
           <div>{monitor.url_ip_address}</div>
           <div className="flex items-center">
-            <Server className="w-4 h-4 mr-2" />
+            <Server className="w-4 h-4 mr-2 text-teal-400" />
             <span className="font-semibold">Protocol:</span>
           </div>
           <div>{monitor.protocol}</div>
@@ -121,7 +123,7 @@ const MonitorCard: React.FC<{ monitor: Monitor; status: MonitorStatus | undefine
             </>
           )}
           <div className="flex items-center">
-            <Clock className="w-4 h-4 mr-2" />
+            <Clock className="w-4 h-4 mr-2 text-teal-400" />
             <span className="font-semibold">Interval:</span>
           </div>
           <div>{monitor.check_interval}s</div>
@@ -133,8 +135,8 @@ const MonitorCard: React.FC<{ monitor: Monitor; status: MonitorStatus | undefine
         )}
         <PingHistory monitorId={monitor.id} />
       </CardContent>
-      <CardFooter className="bg-muted">
-        <Button variant="outline" size="sm" onClick={onRefresh} className="w-full">
+      <CardFooter className="bg-zinc-800">
+        <Button variant="outline" size="sm" onClick={onRefresh} className="w-full bg-zinc-700 text-zinc-300 hover:bg-zinc-600 hover:text-white">
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
@@ -247,53 +249,87 @@ const VMDash: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[...Array(6)].map((_, index) => (
-          <Card key={index} className="overflow-hidden">
-            <CardHeader className="bg-primary">
-              <Skeleton className="h-6 w-3/4" />
-            </CardHeader>
-            <CardContent className="p-4 space-y-4">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-destructive">Error</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>{error}</p>
-          </CardContent>
-          <CardFooter>
-            <Button onClick={fetchMonitors}>Retry</Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {monitors.map((monitor) => (
-        <MonitorCard
-          key={monitor.id}
-          monitor={monitor}
-          status={monitorStatuses.find((s) => s.id === monitor.id)}
-          onRefresh={() => handleRefresh(monitor.id)}
-        />
-      ))}
+    <div className="flex flex-col gap-8 p-6 min-h-screen text-white">
+      <motion.div
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="w-full max-w-7xl mx-auto"
+      >
+        <Card className="bg-zinc-900 border-zinc-800 shadow-xl">
+          <CardContent className="p-8">
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex justify-center mb-6"
+            >
+              <Image
+                src="/github/Uptim logo.png"
+                alt="Uptim Logo"
+                width={80}
+                height={80}
+                className="rounded-full"
+              />
+            </motion.div>
+            <h2 className="text-3xl font-bold mb-6 text-center text-teal-400">
+              Monitor Dashboard
+            </h2>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key="dashboard"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+              >
+                {isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[...Array(6)].map((_, index) => (
+                      <Card key={index} className="overflow-hidden bg-zinc-800 border-zinc-700">
+                        <CardHeader className="bg-zinc-800">
+                          <Skeleton className="h-6 w-3/4 bg-zinc-700" />
+                        </CardHeader>
+                        <CardContent className="p-4 space-y-4">
+                          <Skeleton className="h-4 w-full bg-zinc-700" />
+                          <Skeleton className="h-4 w-full bg-zinc-700" />
+                          <Skeleton className="h-4 w-full bg-zinc-700" />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : error ? (
+                  <div className="flex items-center justify-center h-64">
+                    <Card className="w-full max-w-md bg-zinc-800 border-zinc-700">
+                      <CardHeader>
+                        <CardTitle className="text-red-400">Error</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-zinc-300">{error}</p>
+                      </CardContent>
+                      <CardFooter>
+                        <Button onClick={fetchMonitors} className="bg-teal-600 hover:bg-teal-700 text-white">Retry</Button>
+                      </CardFooter>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {monitors.map((monitor) => (
+                      <MonitorCard
+                        key={monitor.id}
+                        monitor={monitor}
+                        status={monitorStatuses.find((s) => s.id === monitor.id)}
+                        onRefresh={() => handleRefresh(monitor.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };

@@ -14,6 +14,7 @@
   [![Discord](https://img.shields.io/discord/your-discord-server-id.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/your-invite-link)
 
   <a href="#features">Features</a> •
+  <a href="#preview">Preview</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#usage">Usage</a> •
   <a href="#contributing">Contributing</a> •
@@ -35,6 +36,30 @@ Uptime Pinguin is your all-in-one solution for monitoring service availability a
 - 🛠️ **Customizable Checks**: Tailor monitoring to your exact needs
 - 🔒 **SSL/TLS Verification**: Ensure your HTTPS services are secure
 - 📊 **Ping History**: Visualize uptime data over time
+
+## 👀 Preview
+
+Get a glimpse of Uptime Pinguin in action:
+
+<div align="center">
+  <img src="public/showcase/login.jpeg" alt="Login Page" width="80%"/>
+  <p><em>Where you login to your account - password set in the env file</em></p>
+
+  <img src="public/showcase/create-monitor.png" alt="Create a new monitor" width="80%"/>
+  <p><em>Create a new monitor: Add a new service to monitor</em></p>
+
+  <img src="public/showcase/dashboard.png" alt="Overview of all your monitors" width="80%"/>
+  <p><em>Dashboard: Overview of all your monitors</em></p>
+
+  <img src="public/showcase/incidents.png" alt="Incident Management Preview" width="80%"/>
+  <p><em>Incident Management: Create and track issues affecting your services</em></p>
+
+  <img src="public/showcase/image.png" alt="Public Status Page Preview" width="80%"/>
+  <p><em>Public Status Page: Keep your users informed with a clean, accessible overview</em></p>
+
+  <p><em><strong style="text-decoration: underline;">The Design is still a work in progress, so any contributions are welcome!</strong></em></p>
+
+</div>
 
 ## 🏁 Quick Start
 
@@ -60,6 +85,16 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Icons by [Lucide](https://lucide.dev/)
 
+## You don't have a one script to install this beast?
+
+No, we use docker and ill make sure to provide guides to deploy on most platforms.
+
+Platforms:
+
+- Coolify
+- Vercel (Maybe, love next but vercl can kick rocks)
+- Docker (Self-hosted all the way)
+- etc.. more later on.
 ---
 
 Happy monitoring with Uptime Pinguin! 🐧📊
