@@ -5,10 +5,12 @@ import PublicIncidentDisplay from './components/create/PublicIncidentDisplay';
 
 export default function Home() {
   return (
-    <main>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <PublicMonitorDashboard />
+      <main className="flex-grow pt-20">
+        <PublicMonitorDashboard />
+      </main>
       <PublicIncidentDisplay />
-    </main>
+    </div>
   );
 }
