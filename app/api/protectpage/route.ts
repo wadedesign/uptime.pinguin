@@ -1,16 +1,13 @@
-// api/protectpage/route.ts
-
 import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
-import { createHmac } from 'crypto';
+import { randomBytes } from 'crypto';
 import { LRUCache } from 'lru-cache';
-
+import { validatePassword } from '@/lib/auth';
 
 const pool = new Pool({
   connectionString: process.env.DB_URL,
 });
 
-// this should create the table in your db (hopefully) - probably should log this if it doesn't
 async function createTablesIfNotExist() {
   const client = await pool.connect();
   try {
@@ -39,10 +36,10 @@ for (const envVar of requiredEnvVars) {
 
 const rateLimitCache = new LRUCache({
   max: 500,
-  ttl: 60 * 1000, // can you figure out how long this is? LOL
+  ttl: 60 * 1000,
 });
 
-const CSRF_SECRET = process.env.CSRF_SECRET!; // i make you get a secret key for this
+const CSRF_SECRET = process.env.CSRF_SECRET!;
 
 export async function GET(request: NextRequest) {
   const session = await getSession(request);
@@ -54,7 +51,6 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  // ! maybe we need to check the ip address?
   const ip = request.ip || 'unknown';
   const tokenCount = (rateLimitCache.get(ip) as number) || 0;
   if (tokenCount >= 5) {
@@ -62,38 +58,24 @@ export async function POST(request: NextRequest) {
   }
   rateLimitCache.set(ip, tokenCount + 1);
 
-  console.log('Received POST request');
-  
   const body = await request.json();
-  console.log('Request body:', body);
-
   const { password, csrfToken } = body;
 
-  console.log('Received password:', password);
-  console.log('Received CSRF token:', csrfToken);
-
   if (!password || !csrfToken) {
-    console.log('Invalid request: missing password or CSRF token');
     return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
   }
 
   if (!(await validateCSRFToken(csrfToken))) {
-    console.log('Invalid CSRF token');
     return NextResponse.json({ success: false, message: 'Invalid CSRF token' }, { status: 403 });
   }
 
-  const correctPassword = process.env.PROTECT_PASSWORD!;
-  console.log('Correct password:', correctPassword); // Log the correct password (be careful with this in production!)
-
-  if (password === correctPassword) {
-    console.log('Password matched');
+  if (await validatePassword(password)) {
     const userId = await createSession();
     const response = NextResponse.json({ success: true, message: 'Authenticated' });
     await setAuthCookie(response, userId);
     return response;
   }
 
-  console.log('Password mismatch');
   const response = NextResponse.json({ success: false, message: 'Invalid password' }, { status: 401 });
   await clearAuthCookie(response);
   return response;
@@ -108,7 +90,7 @@ async function getSession(request: NextRequest): Promise<{ userId: string } | nu
     const result = await client.query('SELECT user_id FROM sessions WHERE id = $1', [sessionId]);
     if (result.rows[0]) {
       const sessionCreatedAt = result.rows[0].created_at;
-      const sessionMaxAge = parseInt(process.env.COOKIE_MAX_AGE!, 10) * 1000; // Convert to milliseconds
+      const sessionMaxAge = parseInt(process.env.COOKIE_MAX_AGE!, 10) * 1000;
       if (Date.now() - sessionCreatedAt.getTime() > sessionMaxAge) {
         await client.query('DELETE FROM sessions WHERE id = $1', [sessionId]);
         return null;
@@ -152,34 +134,10 @@ async function clearAuthCookie(response: NextResponse) {
 }
 
 async function createCSRFToken(userId: string): Promise<string> {
-  const timestamp = Date.now().toString();
-  const hmac = createHmac('sha256', CSRF_SECRET);
-  hmac.update(`${userId}${timestamp}`);
-  const hash = hmac.digest('hex');
-  return `${timestamp}.${hash}`;
+  const token = randomBytes(32).toString('hex');
+  return token;
 }
 
 async function validateCSRFToken(token: string): Promise<boolean> {
-  console.log('Validating CSRF token:', token);
-  const [timestamp, hash] = token.split('.');
-  if (!timestamp || !hash) {
-    console.log('Invalid token format');
-    return false;
-  }
-
-  const now = Date.now();
-  if (now - parseInt(timestamp, 10) > 3600000) {
-    console.log('Token expired');
-    return false;
-  }
-
-  // uptimer doesn't have to use the user id, so we'll use 'unauthenticated'
-  const userId = 'unauthenticated';
-  const hmac = createHmac('sha256', CSRF_SECRET);
-  hmac.update(`${userId}${timestamp}`);
-  const expectedHash = hmac.digest('hex');
-
-  const isValid = expectedHash === hash;
-  console.log('CSRF token validation result:', isValid);
-  return isValid;
+  return token.length === 64;
 }
