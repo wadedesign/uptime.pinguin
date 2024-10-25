@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from './auth';
+import { getSession, validatePassword } from './auth';
 
 export async function authMiddleware(req: NextRequest) {
   const session = await getSession(req);
@@ -8,6 +8,10 @@ export async function authMiddleware(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // if authenticated, allow the request to proceed - towards the api routes
+  const password = req.headers.get('x-password');
+  if (!password || !(await validatePassword(password))) {
+    return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
+  }
+
   return NextResponse.next();
 }
